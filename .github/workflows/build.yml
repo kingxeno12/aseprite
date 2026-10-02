@@ -1,5 +1,5 @@
 name: build
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch] # Added workflow_dispatch so you get a manual "Run" button
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -7,19 +7,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        build_type: [RelWithDebInfo, Debug]
-        ui: [gui, cli]
-        scripting: [lua, noscripts]
-        exclude:
-          - build_type: Debug
-            ui: gui
-          - build_type: RelWithDebInfo
-            ui: cli
-          - build_type: RelWithDebInfo
-            scripting: noscripts
+        os: [windows-latest] # Kept only Windows to save build time
+        build_type: [RelWithDebInfo] # Standard release build type
+        ui: [gui] # Standard interface
+        scripting: [lua] # Enables plugin/script support
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install Dependencies
@@ -112,6 +105,7 @@ jobs:
         cd tests
         $XVFB bash run-tests.sh
     - name: Upload Finished App
+      if: runner.os == 'Windows'
       uses: actions/upload-artifact@v4
       with:
         name: Aseprite-Windows-Free
